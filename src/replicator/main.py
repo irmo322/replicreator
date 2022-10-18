@@ -30,5 +30,6 @@ _parameters_schema = {"type": "dict", "schema": {
 }}
 
 
-def main(parameters_file_path):
+def generate_web_app(parameters_file_path):
     parameters = load_parameters_yaml(parameters_file_path, _parameters_schema)
+    print(parameters)
