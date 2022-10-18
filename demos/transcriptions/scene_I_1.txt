@@ -1,0 +1,22 @@
+# À tout endroit du texte, une ligne faisant office de commentaire peut être
+# ajoutée en la commençant par #.
+
+Didascalie
+La scène se passe dans un appartement vide.
+Deux chats, à distance respectable, tâtent le terrain avec précaution.
+
+Douby
+Miaaa, Miaaaouuu...
+Miaaa !
+
+Nem
+Rrrrr...
+
+Douby
+(En insistant) Miaaaaaaaou !
+
+Didascalie
+Nem se rapproche doucement d'une fenêtre, jette un coup d'œil et se retire craintivement.
+
+Nem
+Mia.
