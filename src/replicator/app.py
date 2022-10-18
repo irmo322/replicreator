@@ -30,6 +30,12 @@ _parameters_schema = {"type": "dict", "schema": {
 }}
 
 
-def generate_web_app(parameters_file_path):
+def process_parameters_file(parameters_file_path):
     parameters = load_parameters_yaml(parameters_file_path, _parameters_schema)
+    process_parameters(parameters)
+
+
+def process_parameters(parameters):
     print(parameters)
+
+
