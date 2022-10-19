@@ -2,11 +2,14 @@ from .util.parameters_loading import load_parameters_yaml
 
 from pathlib import Path
 import csv
+import json
 
 
 _RES_FOLDER_PATH = Path(__file__).parent / "../../res"
 
 _parameters_schema = {"type": "dict", "schema": {
+    "play_name": {"type": "string"},
+
     "stage_directions": {"type": "dict", "schema": {
         "labels": {"type": "list", "schema": {'type': 'string'}}
     }},
@@ -39,15 +42,14 @@ def process_parameters_file(parameters_file_path):
 
 
 def process_parameters(parameters):
-    print(parameters)  # TODO erase it
-
     check_parameters(parameters)
 
+    main_character_labels = [character["labels"][0] for character in parameters["characters"]]
     all_lines = [load_lines(scene["file_path"]) for scene in parameters["scenes"]]
 
     check_transcriptions(parameters, all_lines)
-    statistics = compute_statistics(parameters, all_lines)
-    save_statistics(parameters, statistics)
+    statistics = compute_statistics(parameters, all_lines, main_character_labels)
+    save_statistics(parameters, statistics, main_character_labels)
     generate_web_app(parameters)
 
 
@@ -89,13 +91,11 @@ def check_transcriptions(parameters, all_lines):
                     raise RuntimeError(f"Unknown character {character} in scene {scene}.")
 
 
-def compute_statistics(parameters, all_lines):
+def compute_statistics(parameters, all_lines, main_character_labels):
     stage_directions_labels = set(parameters["stage_directions"]["labels"])
     label2main = {}
-    main_character_labels = []
     for character in parameters["characters"]:
         main_label = character["labels"][0]
-        main_character_labels.append(main_label)
         for label in character["labels"]:
             label2main[label] = main_label
 
@@ -118,9 +118,8 @@ def compute_statistics(parameters, all_lines):
     return statistics
 
 
-def save_statistics(parameters, statistics):
-    main_character_labels = list(statistics[0].keys())
-    with open(parameters["output"]["statistics"]["file_path"], 'w', newline='') as csvfile:
+def save_statistics(parameters, statistics, main_character_labels):
+    with open(parameters["output"]["statistics"]["file_path"], 'w', newline='', encoding="utf8") as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(["scene name"] +
                         [char + " " + kind
@@ -131,11 +130,6 @@ def save_statistics(parameters, statistics):
                             [scene_statistics[char][kind]
                              for char in main_character_labels
                              for kind in ["lines", "words", "alphanum_chars"]])
-
-
-def generate_web_app(parameters):
-    # 4 - générer la web app
-    pass  # TODO
 
 
 def load_lines(transcription_file_path):
@@ -173,3 +167,50 @@ def remove_inline_stage_directions(line):
             clean_line_chunks.append(line[:begin])
             line = line[begin:]
     return "".join(clean_line_chunks)
+
+
+def generate_web_app(parameters):
+    version = parameters["version"]
+
+    template_app_file_path = _RES_FOLDER_PATH / "template_app.html"
+    template_python_main_script_file_path = _RES_FOLDER_PATH / "template_python_main_script.py"
+    brython_script_file_path = _RES_FOLDER_PATH / "deps/Brython-3.9.6/brython.js"
+    app_file_path = parameters["output"]["web_app"]["file_path"]
+
+    transcriptions_script_chunks = []
+    for scene in parameters["scenes"]:
+        with open(scene["file_path"], 'r', encoding='utf-8') as f:
+            text = f.read()
+        transcription_script_chunk = f'''\
+    """\\
+{text}""",
+'''
+        transcriptions_script_chunks.append(transcription_script_chunk)
+    transcriptions_script = "".join(transcriptions_script_chunks)
+
+    scriptable_parameters = {
+        "play_name": parameters["play_name"],
+        "stage_directions": parameters["stage_directions"],
+        "characters": parameters["characters"],
+        "scenes": [{"menu_name": scene["menu_name"]} for scene in parameters["scenes"]],
+        "version": parameters["version"]
+    }
+    parameters_script = json.dumps(scriptable_parameters, ensure_ascii=False, indent=4)
+
+    with open(template_python_main_script_file_path, "r", encoding='utf-8') as f:
+        template_python_main_script = f.read()
+    python_main_script = template_python_main_script.replace("##RAW_TRANSCRIPTIONS##", transcriptions_script)
+    python_main_script = python_main_script.replace("##PARAMETERS##", parameters_script)
+
+    with open(brython_script_file_path, "r", encoding='utf-8') as f:
+        brython_script = f.read()
+
+    with open(template_app_file_path, "r", encoding='utf-8') as f:
+        template_app_script = f.read()
+    app_script = template_app_script.replace("##PYTHON_MAIN_SCRIPT##", python_main_script)
+    app_script = app_script.replace("##PLAY_NAME##", parameters["play_name"])
+    app_script = app_script.replace("##VERSION##", version)
+    app_script = app_script.replace("<!--##BRYTHON_SCRIPT##-->", brython_script)
+
+    with open(app_file_path, "w", encoding='utf-8') as f:
+        f.write(app_script)

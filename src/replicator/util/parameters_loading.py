@@ -53,7 +53,7 @@ def load_parameters_yaml(parameters_file_path, schema):
     :return: validated parameters
     """
     # Load yaml file and validate it
-    with open(parameters_file_path, 'r') as f:
+    with open(parameters_file_path, 'r', encoding="utf8") as f:
         raw_parameters = yaml.load(f.read(), Loader=yaml.SafeLoader)
 
     try:

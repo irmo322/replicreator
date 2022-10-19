@@ -1,3 +1,4 @@
+play_name: "Deux chats et un chien"
 
 stage_directions:
   labels: ["Didascalie"]  # Ici aussi on peut en mettre plusieurs, bien que ce soit relativement peu utile

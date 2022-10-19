@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Replicator - ##PLAY_NAME## - (##VERSION##)</title>
+    <script type="text/javascript">
+<!--##BRYTHON_SCRIPT##-->
+    </script>
+
+    <style>
+    body {
+        text-align: center;
+    }
+
+    table, td {
+        text-align: center;
+        border-collapse: collapse;
+    }
+
+    #start_game_panel_title, #start_game_panel {
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    #char_sel_panel_td, #scene_sel_panel_td {
+        width: 50%;
+    }
+
+    #char_sel_panel_td, #char_sel_panel_title {
+        background-color: #eafaf1;
+    }
+
+    #scene_sel_panel_td, #scene_sel_panel_title {
+        background-color: #f4ecf7;
+    }
+
+    #char_sel_panel_title, #scene_sel_panel_title, #start_game_panel_title {
+        font-size: large;
+        font-weight: bold;
+    }
+
+    .missing_scene {
+        font-style: italic;
+        color: gray;
+    }
+
+    .char_button_selected {
+        background-color: #82e0aa;
+        font-weight: bold;
+    }
+
+    .scene_button_selected {
+        background-color: #bb8fce;
+        font-weight: bold;
+    }
+
+    .character_in_text {
+        font-weight: bold;
+    }
+
+    .didascalie {
+        font-style: italic;
+    }
+
+    .hidden {
+        visibility: hidden;
+    }
+
+    .bloc_line_back_0 {
+        color: #28b463;
+    }
+
+    .bloc_line_back_1 {
+        color: #7d3c98;
+    }
+    </style>
+</head>
+
+<body onload="brython()">
+<script type="text/python">
+##PYTHON_MAIN_SCRIPT##
+</script>
+</body>
+
+</html>
