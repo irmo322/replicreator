@@ -2,7 +2,7 @@
 
 ## installation
 
-Install python 3.8+ and execute :
+Install python 3.8+, clone this repo and execute in repo's root folder :
 > pip3 install -e .
 
 Now you should be able to execute 'generate_web_app.py' script in demos folder.
