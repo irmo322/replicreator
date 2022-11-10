@@ -133,7 +133,7 @@ def save_statistics(parameters, statistics, main_character_labels):
 
 
 def load_lines(transcription_file_path):
-    with open(transcription_file_path) as f:
+    with open(transcription_file_path, encoding="utf8") as f:
         file_lines = [line.strip() for line in f.readlines()]
 
     theatrical_lines = []
