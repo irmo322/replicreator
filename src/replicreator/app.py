@@ -143,8 +143,11 @@ def load_lines(transcription_file_path):
             new_character = True
         elif file_line[0] != "#":
             if new_character:
-                block_characters = [w.strip() for w in file_line.split(",")]
-                theatrical_lines.append({"characters": block_characters, "lines": []})
+                block_characters = [
+                    character
+                    for w in remove_inline_stage_directions(file_line).split(",")
+                    if (character := w.strip()) != ""]
+                theatrical_lines.append({"characters": block_characters, "lines": [], "characters_line": file_line})
                 new_character = False
             else:
                 theatrical_lines[-1]["lines"].append(file_line)

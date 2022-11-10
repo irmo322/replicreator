@@ -326,6 +326,23 @@ def format_line(raw_line):
     return div
 
 
+def remove_inline_stage_directions(line):
+    clean_line_chunks = []
+    while line:
+        if line[0] == "(":
+            end = line.find(")")
+            if end == -1:
+                len(line) - 1
+            line = line[end + 1:]
+        else:
+            begin = line.find("(")
+            if begin == -1:
+                begin = len(line)
+            clean_line_chunks.append(line[:begin])
+            line = line[begin:]
+    return "".join(clean_line_chunks)
+
+
 class App:
 
     HISTORY_LENGTH = 4
@@ -353,8 +370,11 @@ class App:
                     new_character = True
                 elif file_line[0] != "#":
                     if new_character:
-                        line_characters = [w.strip() for w in file_line.split(",")]
-                        blocs.append({"characters": line_characters, "lines": []})
+                        line_characters = [
+                            line_character
+                            for w in remove_inline_stage_directions(file_line).split(",")
+                            if (line_character := w.strip()) != ""]
+                        blocs.append({"characters": line_characters, "lines": [], "characters_line": file_line})
                         if line_characters[0] not in stage_directions_labels:
                             scene_characters.update([label2main[char] for char in line_characters])
                         new_character = False
@@ -411,11 +431,14 @@ class App:
                 self.selected_scene = selection_screen.scene_observable.value
                 self.selected_blocs = self.transcriptions[self.selected_scene]["blocs"]
 
-                self.selected_bloc_lines = [(bloc_index, line_index)
-                                            for bloc_index, bloc in enumerate(self.selected_blocs)
-                                            if self.selected_character in [
-                                                label2main[char] for char in bloc["characters"] if char in label2main]
-                                            for line_index in range(len(bloc["lines"]))]
+                self.selected_bloc_lines = [
+                    (bloc_index, line_index)
+                    for bloc_index, bloc in enumerate(self.selected_blocs)
+                    if self.selected_character in [
+                        label2main[char] for char in bloc["characters"] if char in label2main]
+                    for line_index in range(len(bloc["lines"]))
+                    if remove_inline_stage_directions(bloc["lines"][line_index]).strip() != ""
+                ]
 
                 self.base_evaluation_introduction()
 
@@ -423,7 +446,6 @@ class App:
         document <= selection_screen.get_html_component()
 
     def simple_reading(self):
-        print("plop 01")
         # construct text
         text = []
         bloc_index = len(self.selected_blocs) - 1
@@ -437,7 +459,8 @@ class App:
             text.insert(0, div)
             if line_index == 0:
                 if bloc_characters[0] not in stage_directions_labels:
-                    text.insert(0, html.DIV(", ".join(bloc_characters), Class="character_in_text"))
+                    text.insert(0, html.DIV(format_line(self.selected_blocs[bloc_index]["characters_line"]),
+                                            Class="character_in_text"))
                 text.insert(0, html.BR())
             if line_index > 0:
                 line_index -= 1
@@ -502,7 +525,8 @@ class App:
             text.insert(0, div)
             if line_index == 0 or back_count == self.HISTORY_LENGTH - 1:
                 if bloc_characters[0] not in stage_directions_labels:
-                    text.insert(0, html.DIV(", ".join(bloc_characters), Class="character_in_text"))
+                    text.insert(0, html.DIV(format_line(self.selected_blocs[bloc_index]["characters_line"]),
+                                            Class="character_in_text"))
                 text.insert(0, html.BR())
             if line_index > 0:
                 line_index -= 1
