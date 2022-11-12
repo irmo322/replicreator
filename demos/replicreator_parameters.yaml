@@ -20,4 +20,10 @@ output:
   web_app:
     file_path: "index.html"
   statistics:
-    file_path: "statistics.csv"
+    base_file_path: "statistics"  # replicreator will append "_[metric].csv"
+    metrics:
+      lines: True
+      words: True
+      alphanum_chars: True
+    compute_total_per_scene: True
+    compute_total_per_character: True

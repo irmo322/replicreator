@@ -29,8 +29,15 @@ _parameters_schema = {"type": "dict", "schema": {
         "web_app": {"type": "dict", "schema": {
             "file_path": {"type": "path", "coerce": "join_base"}
         }},
-        "statistics": {"type": "dict", "schema": {
-            "file_path": {"type": "path", "coerce": "join_base"}
+        "statistics": {"type": "dict", "default": {}, "schema": {
+            "base_file_path": {"type": "path", "coerce": "join_base"},
+            "metrics": {"type": "dict", "schema": {
+                "lines": {"type": "boolean"},
+                "words": {"type": "boolean"},
+                "alphanum_chars": {"type": "boolean"},
+            }},
+            "compute_total_per_scene": {"type": "boolean"},
+            "compute_total_per_character": {"type": "boolean"},
         }}
     }}
 }}
@@ -119,17 +126,32 @@ def compute_statistics(parameters, all_lines, main_character_labels):
 
 
 def save_statistics(parameters, statistics, main_character_labels):
-    with open(parameters["output"]["statistics"]["file_path"], 'w', newline='', encoding="utf8") as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(["scene name"] +
-                        [char + " " + kind
-                         for char in main_character_labels
-                         for kind in ["lines", "words", "alphanum_chars"]])
-        for scene_statistics, scene in zip(statistics, parameters["scenes"]):
-            writer.writerow([scene["menu_name"]] +
-                            [scene_statistics[char][kind]
-                             for char in main_character_labels
-                             for kind in ["lines", "words", "alphanum_chars"]])
+    for metric in ["lines", "words", "alphanum_chars"]:
+        if parameters["output"]["statistics"]["metrics"][metric]:
+            file_path = str(parameters["output"]["statistics"]["base_file_path"]) + f"_{metric}.csv"
+            with open(file_path, 'w', newline='', encoding="utf8") as csvfile:
+                writer = csv.writer(csvfile, delimiter=',')
+                row = ["scene name"] + main_character_labels
+                if parameters["output"]["statistics"]["compute_total_per_scene"]:
+                    row.append("TOTAL")
+                writer.writerow(row)
+
+                stat_row_cumul = None
+
+                for scene_statistics, scene in zip(statistics, parameters["scenes"]):
+                    row = [scene["menu_name"]] + [scene_statistics[char][metric] for char in main_character_labels]
+                    if parameters["output"]["statistics"]["compute_total_per_scene"]:
+                        row.append(sum(row[1:]))
+                    writer.writerow(row)
+
+                    if stat_row_cumul is None:
+                        stat_row_cumul = row[1:]
+                    else:
+                        stat_row_cumul = [a + b for a, b in zip(stat_row_cumul, row[1:])]
+
+                if parameters["output"]["statistics"]["compute_total_per_character"]:
+                    row = ["TOTAL"] + stat_row_cumul
+                    writer.writerow(row)
 
 
 def load_lines(transcription_file_path):
