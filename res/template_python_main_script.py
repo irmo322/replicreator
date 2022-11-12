@@ -170,7 +170,6 @@ class ReadingSelectionScreen:
 
                 def get_button_action(scene_id):
                     def button_action(event):
-                        print("plop 02", scene_id)
                         self.scene_observable.value = scene_id
                     return button_action
 
@@ -386,6 +385,15 @@ class App:
                 "characters": scene_characters
             })
 
+        home_button = html.BUTTON("⌂", id="home_button")
+
+        def home_button_action(event):
+            self.start()
+
+        home_button.bind("click", home_button_action)
+
+        document <= home_button + html.DIV(id="main_div")
+
     def start(self):
         self.start_menu()
 
@@ -403,7 +411,8 @@ class App:
                     self.start_selection()
 
         menu_screen.action_observable.subscribe(start_observable_callback)
-        document <= menu_screen.get_html_component()
+        document["main_div"].clear()
+        document["main_div"] <= menu_screen.get_html_component()
 
     def start_reading_scene(self):
         reading_selection_screen = ReadingSelectionScreen(self.transcriptions)
@@ -418,7 +427,8 @@ class App:
                 self.simple_reading()
 
         reading_selection_screen.scene_observable.subscribe(scene_observable_callback)
-        document <= reading_selection_screen.get_html_component()
+        document["main_div"].clear()
+        document["main_div"] <= reading_selection_screen.get_html_component()
 
     def start_selection(self):
         selection_screen = SelectionScreen(self.transcriptions)
@@ -443,7 +453,8 @@ class App:
                 self.base_evaluation_introduction()
 
         selection_screen.start_observable.subscribe(start_observable_callback)
-        document <= selection_screen.get_html_component()
+        document["main_div"].clear()
+        document["main_div"] <= selection_screen.get_html_component()
 
     def simple_reading(self):
         # construct text
@@ -471,7 +482,8 @@ class App:
                 else:
                     break
 
-        document <= text
+        document["main_div"].clear()
+        document["main_div"] <= text
 
     def base_evaluation_introduction(self):
         message = html.DIV("""\
@@ -482,7 +494,8 @@ class App:
         def callback(button_index):
             self.base_evaluation()
 
-        document <= create_question_panel(message, button_contents, callback)
+        document["main_div"].clear()
+        document["main_div"] <= create_question_panel(message, button_contents, callback)
 
     def base_evaluation(self):
         def callback(line_scores):
@@ -544,13 +557,15 @@ class App:
             else:
                 text.extend([html.HR(), html.DIV("Répéter les phrases en couleur jusqu'à les connaître par cœur.")])
                 button_contents = ["C'est fait."]
-                document <= create_question_panel(text, button_contents, lambda i: parent_callback(result))
+                document["main_div"].clear()
+                document["main_div"] <= create_question_panel(text, button_contents, lambda i: parent_callback(result))
 
         def question_callback(button_index):
             text[-1].classList.remove("hidden")
             if button_index == 0:
                 button_contents = ["J'ai tout bon 😁", "Presque 😊", "Pas bon 😓"]
-                document <= create_question_panel(text, button_contents, autonote_callback)
+                document["main_div"].clear()
+                document["main_div"] <= create_question_panel(text, button_contents, autonote_callback)
             else:
                 autonote_callback(2)
 
@@ -558,7 +573,8 @@ class App:
         question_button_contents = ["Je me souviens de la suite et je l'ai récitée.",
                                     "Je ne me souviens pas de la suite 😔"]
         text[-1].classList.add("hidden")
-        document <= create_question_panel(text, question_button_contents, question_callback)
+        document["main_div"].clear()
+        document["main_div"] <= create_question_panel(text, question_button_contents, question_callback)
 
     def show_base_scores(self):
         self.base_line_score_resume = {"perfect": 0, "almost": 0, "ko": 0}
@@ -592,7 +608,8 @@ class App:
             else:
                 self.start_selection()
 
-        document <= create_question_panel(message, button_contents, callback)
+        document["main_div"].clear()
+        document["main_div"] <= create_question_panel(message, button_contents, callback)
 
     def random_focus(self, progress, last_bloc_line_index):
         progress += 1
@@ -635,7 +652,8 @@ class App:
         def callback(button_index):
             self.final_evaluation()
 
-        document <= create_question_panel(message, button_contents, callback)
+        document["main_div"].clear()
+        document["main_div"] <= create_question_panel(message, button_contents, callback)
 
     def final_evaluation(self):
         def callback(line_scores):
@@ -677,7 +695,8 @@ class App:
             else:
                 self.start_selection()
 
-        document <= create_question_panel(message, button_contents, callback)
+        document["main_div"].clear()
+        document["main_div"] <= create_question_panel(message, button_contents, callback)
 
 
 if __name__ == '__main__':
